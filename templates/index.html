@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% macro img(a) %}{% if a.photo %}{{ asset(a.photo) }}{% else %}data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 450'%3E%3Crect width='800' height='450' fill='%23cbd5e0'/%3E%3C/svg%3E{% endif %}{% endmacro %}
+{% block title %}데이터뉴스 - {{ meta.city }}{% endblock %}
+{% block body %}
+<div class="band"><div class="dark">
+  {% for a in arts %}
+  <a class="fcard" href="{{ href('article', meta.stn, a.slug) }}"><img src="{{ img(a) }}" alt=""><h3>{{ a.title }}</h3></a>
+  {% endfor %}
+</div></div>
+<div class="box">
+  <div class="cols">
+    <main>
+      {% for a in arts %}
+      <a class="item" href="{{ href('article', meta.stn, a.slug) }}">
+        <img class="ph" src="{{ img(a) }}" alt="">
+        <div><div class="cat">{{ a.cat }}<i>-</i>{{ a.cat2 }}</div><h2>{{ a.title }}</h2><p>{{ a.lead }}</p></div>
+      </a>
+      {% endfor %}
+    </main>
+    <aside>
+      <form class="side" method="get">
+        <h4>데이터뉴스 소개.</h4>
+        <label for="stn">관측 지점</label>
+        <select id="stn" name="stn" class="in" onchange="location.href=this.value">
+          {% for code, name in stations.items() %}<option value="{{ href('index', code) }}" {{ 'selected' if code == meta.stn }}>{{ name }} (ASOS {{ code }})</option>{% endfor %}
+        </select>
+        <label>관측 기간</label>
+        <div class="in">&nbsp;&nbsp;{{ meta.period }}</div>
+        <a class="bt" href="{{ href('article', meta.stn, 'temp') }}">기사 보기</a>
+      </form>
+    </aside>
+  </div>
+  <div class="sec">데이터로 보는 최근 {{ meta.days }}일</div>
+  <div class="grid3">
+    {% for a in arts %}
+    <a class="gc" href="{{ href('article', meta.stn, a.slug) }}"><img src="{{ img(a) }}" alt=""><h3>{{ a.title }}</h3><p>{{ a.cat2 }} · 데이터 브리핑</p></a>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

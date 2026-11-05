@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% macro img(a) %}{% if a.photo %}{{ asset(a.photo) }}{% else %}data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 450'%3E%3Crect width='800' height='450' fill='%23cbd5e0'/%3E%3C/svg%3E{% endif %}{% endmacro %}
+{% block title %}{{ a.title }} - 데이터뉴스{% endblock %}
+{% block hclass %}abs{% endblock %}
+{% block head %}<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>{% endblock %}
+{% block body %}
+<div class="ahead"><div class="in">
+  <div class="ct">{{ a.cat }}<span>|</span>{{ a.cat2 }}</div>
+  <h1>{{ a.title }}</h1>
+  <div class="meta"><b>데이터팀</b>&#9719; {{ now.strftime('%Y년 %m월%d일.') }}</div>
+</div></div>
+<div class="acols">
+  <article>
+    <div class="share"><span class="l">기사 공유하기</span>
+      <span class="c" style="background:#3b5998">f</span><span class="c" style="background:#1da1f2">t</span>
+      <span class="c" style="background:#fee500;color:#111;font-size:11px">TALK</span>
+      <span class="c" style="background:#229ed9">&#10148;</span><span class="c" style="background:#2b6cb0">&#9993;</span></div>
+    <p class="lead">{{ a.lead }} (<span>1분</span>)</p>
+    <ul class="toc">{% for t in a.toc %}<li>{{ t }}</li>{% endfor %}</ul>
+    <img class="hero" src="{{ img(a) }}" alt="">
+    <p class="cap">{% if a.photo %}사진: 한국관광공사 포토코리아 (공공데이터포털 관광사진 정보){% else %}사진 없음{% endif %}</p>
+    <div class="acont">
+      {% for h, text, has_chart in a.sections %}
+      <h3>{{ h }}</h3><p>{{ text|safe }}</p>
+      {% if has_chart %}<canvas id="chart"></canvas>{% endif %}
+      {% endfor %}
+    </div>
+    <div class="src">자료: 기상청 지상(종관, ASOS) 일자료 · 공공데이터포털 · 관측기간 {{ meta.period }}</div>
+  </article>
+  <aside>
+    <div class="sdate">{{ now.strftime('%Y년 %m월 %d일 %H:%M') }}</div>
+    <div class="sbox"><h4>데이터 정보</h4>지점: {{ meta.city }} (ASOS {{ meta.stn }})<br>기간: {{ meta.period }}<br>제공: 기상청 · 공공데이터포털</div>
+  </aside>
+</div>
+<div class="rel"><h2>관련 글</h2>
+  <div class="grid3">
+    {% for o in others %}<a class="gc" href="{{ href('article', meta.stn, o.slug) }}"><img src="{{ img(o) }}" alt=""><h3>{{ o.title }}</h3></a>{% endfor %}
+  </div>
+</div>
+<script>
+const C = {{ a.chart|tojson }};
+new Chart(document.getElementById('chart'), {
+  type: C.type, data: { labels: C.labels, datasets: C.datasets },
+  options: { plugins: { legend: { position: 'bottom' } }, scales: { x: { ticks: { maxTicksLimit: 8 } } } }
+});
+</script>
+{% endblock %}

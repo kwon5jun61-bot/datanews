@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="box" style="margin-top:80px;text-align:center;padding:120px 20px">
+  <h2 style="font-size:28px;margin:0 0 12px">문제가 생겼습니다</h2>
+  <p>{{ msg or "페이지를 찾을 수 없습니다." }}</p>
+  <p><a href="{{ href('index','108') }}" style="color:#3182ce">홈으로</a></p>
+</div>
+{% endblock %}

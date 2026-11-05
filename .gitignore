@@ -1,0 +1,6 @@
+.env
+.venv/
+__pycache__/
+static/photos/
+docs/
+legacy_html_demo/

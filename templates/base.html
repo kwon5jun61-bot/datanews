@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}데이터뉴스{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ asset('style.css') }}">
+{% block head %}{% endblock %}
+</head>
+<body>
+<header class="top {% block hclass %}{% endblock %}">
+  <div class="hin">
+    <a href="{{ href('index', meta.stn if meta else '108') }}" class="logo">data<b>news</b></a>
+    <nav class="m">
+      {% for code, name in stations.items() %}{% if loop.index <= 4 %}<a class="n" href="{{ href('index', code) }}">{{ name }}</a>{% endif %}{% endfor %}
+    </nav>
+  </div>
+</header>
+{% block body %}{% endblock %}
+<footer>
+  데이터뉴스 · 출처: 기상청 ASOS 일자료, 한국관광공사 관광사진 정보 (공공데이터포털)
+  {% if meta %}<br>{{ meta.city }} · {{ meta.period }}{% if meta.demo %} · 샘플 데이터{% endif %}{% endif %}
+</footer>
+</body>
+</html>
