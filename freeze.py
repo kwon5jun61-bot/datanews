@@ -18,12 +18,21 @@ OUT.mkdir()
 web.STATIC_EXPORT = True
 client = web.app.test_client()
 
+failed = []
 for stn in services.STATIONS:
-    arts, _ = services.build_articles(stn)
-    (OUT / web.href("index", stn)).write_bytes(client.get(f"/?stn={stn}").data)
-    for a in arts:
-        (OUT / web.href("article", stn, a["slug"])).write_bytes(client.get(f"/a/{a['slug']}?stn={stn}").data)
-    print("OK", stn, services.STATIONS[stn])
+    try:
+        arts, _ = services.build_articles(stn)
+        (OUT / web.href("index", stn)).write_bytes(client.get(f"/?stn={stn}").data)
+        for a in arts:
+            (OUT / web.href("article", stn, a["slug"])).write_bytes(client.get(f"/a/{a['slug']}?stn={stn}").data)
+        print("OK", stn, services.STATIONS[stn])
+    except Exception as e:  # 한 지점 실패가 전체 배포를 막지 않게 (서울은 필수)
+        print("실패", stn, type(e).__name__)
+        failed.append(stn)
+        if stn == "108":
+            sys.exit("서울(108) 데이터를 받지 못해 배포를 중단합니다.")
+if failed:
+    print("건너뛴 지점:", failed)
 
 shutil.copy(Path(__file__).parent / "static" / "style.css", OUT / "style.css")
 for p in (Path(__file__).parent / "static" / "photos").glob("*.jpg"):

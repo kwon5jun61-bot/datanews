@@ -22,6 +22,20 @@ STATIONS = {"108": "서울", "112": "인천", "119": "수원", "133": "대전", 
 ASOS_URL = "https://apis.data.go.kr/1360000/AsosDalyInfoService/getWthrDataList"
 PHOTO_URL = "https://apis.data.go.kr/B551011/PhotoGalleryService1/gallerySearchList1"
 
+def _get(url, **kw):
+    """해외(GitHub 서버)에서 호출하면 공공데이터포털 응답이 느릴 수 있어 재시도한다."""
+    last = None
+    for i in range(4):
+        try:
+            r = requests.get(url, timeout=kw.pop("timeout", 60) if i == 0 else 60, **kw)
+            r.raise_for_status()
+            return r
+        except requests.RequestException as e:
+            last = e
+            time.sleep(3 * (i + 1))
+    raise last
+
+
 _cache: dict = {}
 TTL = 3600  # 1시간 캐시 (API 호출 횟수 절약)
 
@@ -47,7 +61,7 @@ def _fetch_weather(stn: str, days: int = 30):
             rows.append({"d": (start + timedelta(days=i)).isoformat(), "avg": a, "min": round(a - 4, 1),
                          "max": round(a + 5, 1), "rain": round(rnd.random() * 30, 1) if rnd.random() > .75 else 0.0})
         return rows, True
-    r = requests.get(ASOS_URL, timeout=20, params={
+    r = _get(ASOS_URL, params={
         "serviceKey": KEY, "pageNo": 1, "numOfRows": days + 10, "dataType": "JSON", "dataCd": "ASOS",
         "dateCd": "DAY", "startDt": start.strftime("%Y%m%d"), "endDt": end.strftime("%Y%m%d"), "stnIds": stn})
     r.raise_for_status()
@@ -80,7 +94,7 @@ def _fetch_photo(keyword: str):
     if path.exists():
         return f"/static/photos/{fname}"
     try:
-        r = requests.get(PHOTO_URL, timeout=20, params={
+        r = _get(PHOTO_URL, params={
             "serviceKey": KEY, "numOfRows": 5, "pageNo": 1, "MobileOS": "ETC", "MobileApp": "datanews",
             "arrange": "D", "_type": "json", "keyword": keyword})  # D = 생성일(최신 등록) 순
         r.raise_for_status()
@@ -90,7 +104,7 @@ def _fetch_photo(keyword: str):
         url = next((i["galWebImageUrl"] for i in items if i.get("galWebImageUrl")), None)
         if not url:
             return None
-        path.write_bytes(requests.get(url, timeout=30).content)
+        path.write_bytes(_get(url).content)
         return f"/static/photos/{fname}"
     except Exception as e:  # 사진은 없어도 기사는 보여준다
         print("사진 조회 실패:", keyword, str(e).replace(KEY, "***"))
