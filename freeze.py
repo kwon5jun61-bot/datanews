@@ -6,6 +6,12 @@ from pathlib import Path
 import app as web
 import services
 
+import os
+import sys
+
+if os.getenv("GITHUB_ACTIONS") and not services.KEY:  # 키 없이 샘플 데이터가 배포되는 사고 방지
+    sys.exit("DATA_GO_KR_KEY 비밀값이 없습니다. 저장소 Settings > Secrets > Actions 에 등록하세요.")
+
 OUT = Path(__file__).parent / "docs"
 shutil.rmtree(OUT, ignore_errors=True)
 OUT.mkdir()
